@@ -1,30 +1,46 @@
+import re
+from typing import List, Dict
+
 def split_text(
-    documents: list[dict],
+    documents: List[Dict],
     chunk_size: int = 500,
     chunk_overlap: int = 50
-) -> list[dict]:
-
+) -> List[Dict]:
     chunks = []
 
     for doc in documents:
-        content = doc["content"]
+        text = doc["content"]
         source = doc.get("source", "unknown")
 
-        start = 0
-        end = chunk_size
-        chunk_id = 0
+        entries = re.split(r"(?=Pergunta:)", text)
 
-        while start < len(content):
-            chunk_text = content[start:end]
+        for entry_id, entry in enumerate(entries):
+            entry = entry.strip()
+            if not entry:
+                continue
 
-            chunks.append({
-                "content": chunk_text,
-                "source": source,
-                "chunk_id": chunk_id
-            })
+            if len(entry) <= chunk_size:
+                chunks.append({
+                    "content": entry,
+                    "source": source,
+                    "entry_id": entry_id,
+                    "chunk_id": 0
+                })
+            else:
+                start = 0
+                end = chunk_size
+                chunk_id = 0
 
-            chunk_id += 1
-            start = end - chunk_overlap
-            end = start + chunk_size
+                while start < len(entry):
+                    snippet = entry[start:end]
+                    chunks.append({
+                        "content": snippet,
+                        "source": source,
+                        "entry_id": entry_id,
+                        "chunk_id": chunk_id
+                    })
+                    chunk_id += 1
+                    start = end - chunk_overlap
+                    end = start + chunk_size
 
     return chunks
