@@ -1,16 +1,9 @@
 from src.ingestion.document_loader import load_documents_from_dir
+from src.ingestion.preprocessor import preprocess_documents
 from src.ingestion.text_splitter import split_text
 
 docs = load_documents_from_dir("data/raw")
+cleaned_docs = preprocess_documents(docs)
+chunks = split_text(cleaned_docs)
 
-print(f"docs loaded: {len(docs)}")
-
-for doc in docs:
-    print(f"\nfont: {doc['source']}")
-    print(f"first letters:\n{doc['content'][:200]}")
-
-docs = load_documents_from_dir("data/raw")
-chunks = split_text(docs, chunk_size=300, chunk_overlap=50)
-
-print(f"total chunks generated: {len(chunks)}")
-print(f"example:\n{chunks[0]}")
+print(chunks[0]["content"])
