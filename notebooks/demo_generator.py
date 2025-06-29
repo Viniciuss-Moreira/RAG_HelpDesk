@@ -3,7 +3,7 @@ from src.retrieval.retriever import Retriever
 from src.generation.response_generator import generate_answer
 
 retriever = Retriever("data/embeddings/batch_000.npy")
-query = "Meu notebook está muito lento, o que posso fazer? E se não resolver?"
+query = "Como mudar o DNS da minha conexão?"
 
 idxs, scores = retriever.retrieve(query, top_k=1)
 
