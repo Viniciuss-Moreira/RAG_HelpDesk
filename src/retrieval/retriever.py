@@ -14,4 +14,4 @@ class Retriever:
     def retrieve(self, query: str, top_k: int = 5):
         qv = self.model.encode(query, normalize_embeddings=True).astype(np.float32)
         distances, indices = self.index.search(qv, top_k)
-        return indices[0], distances[0]
+        return indices[0].copy(), distances[0].copy()
