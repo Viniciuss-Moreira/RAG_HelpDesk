@@ -5,8 +5,11 @@ from langchain_community.embeddings import HuggingFaceBgeEmbeddings
 from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
 
-# Carrega as variáveis de ambiente (HUGGINGFACE_API_TOKEN)
+# Carrega o .env que está na raiz do projeto (acima de src/)
+dotenv_path = os.path.join(os.path.dirname(__file__), "..", ".env")
 load_dotenv()
+print("Procurando .env em:", dotenv_path)
+
 
 # --- Configuração ---
 RAW_DATA_DIR = "data/raw"
