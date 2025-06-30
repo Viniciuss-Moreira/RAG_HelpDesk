@@ -15,3 +15,9 @@ class Retriever:
         qv = self.model.encode(query, normalize_embeddings=True).astype(np.float32)
         distances, indices = self.index.search(qv, top_k)
         return indices[0].copy(), distances[0].copy()
+    
+    def set_chunk_texts(self, texts: list[str]):
+        self._chunk_texts = texts
+
+    def get_chunk_texts(self) -> list[str]:
+        return getattr(self, "_chunk_texts", [])
