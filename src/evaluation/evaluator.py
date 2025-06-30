@@ -1,9 +1,13 @@
 import json
 import numpy as np
 from src.retrieval.retriever import Retriever
+from difflib import SequenceMatcher
+
+def has_similar_keyword(text, keywords, threshold=0.7):
+    return any(SequenceMatcher(None, kw.lower(), text.lower()).ratio() > threshold for kw in keywords)
 
 def precision_at_k(retrieved_texts, expected_keywords) -> float:
-    hits = sum(any(kw.lower() in chunk.lower() for kw in expected_keywords) for chunk in retrieved_texts)
+    hits = sum(has_similar_keyword(chunk, expected_keywords) for chunk in retrieved_texts)
     return hits / len(retrieved_texts) if retrieved_texts else 0.0
 
 def run_evaluation():

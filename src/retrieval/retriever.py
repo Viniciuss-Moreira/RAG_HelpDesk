@@ -3,7 +3,7 @@ from sentence_transformers import SentenceTransformer
 from src.retrieval.vector_store import VectorStore
 
 class Retriever:
-    def __init__(self, embeddings_path: str, model_name: str = "all-MiniLM-L6-v2"):
+    def __init__(self, embeddings_path: str, model_name: str = "BAAI/bge-small-en-v1.5"):
         self.model = SentenceTransformer(model_name)
         dim = self.model.get_sentence_embedding_dimension()
         self.index = VectorStore(dim=dim)

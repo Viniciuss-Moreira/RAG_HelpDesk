@@ -4,7 +4,7 @@ from sentence_transformers import SentenceTransformer
 from typing import List
 
 EMBEDDING_DIR = "data/embeddings"
-MODEL_NAME = "all-MiniLM-L6-v2"
+MODEL_NAME = "BAAI/bge-small-en-v1.5"
 
 def load_embedder(model_name: str = MODEL_NAME):
     return SentenceTransformer(model_name)
