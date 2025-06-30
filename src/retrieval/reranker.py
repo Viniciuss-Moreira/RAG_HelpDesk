@@ -8,17 +8,24 @@ class HybridReranker:
     def __init__(
         self,
         retriever: Retriever,
+        chunk_texts: List[str],
         reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-12-v2",
         sparse_alpha: float = 0.5
     ):
-
         self.retriever = retriever
+        self.chunk_texts = chunk_texts
+        self.n_chunks = len(chunk_texts)
         self.reranker = CrossEncoder(reranker_model)
         self.sparse_alpha = sparse_alpha
 
-        chunk_texts = self.retriever.get_chunk_texts()
-        self.vectorizer = TfidfVectorizer()
-        self.tfidf_matrix = self.vectorizer.fit_transform(chunk_texts)
+        try:
+            self.vectorizer = TfidfVectorizer()
+            self.tfidf_matrix = self.vectorizer.fit_transform(chunk_texts)
+            self.use_sparse = True
+        except Exception:
+            self.vectorizer = None
+            self.tfidf_matrix = np.zeros((self.n_chunks, 1))
+            self.use_sparse = False
 
     def retrieve_and_rerank(
         self,
@@ -27,17 +34,19 @@ class HybridReranker:
         top_k_final: int = 5,
         keyword_filter: Optional[List[str]] = None
     ) -> Tuple[List[int], List[float]]:
-
-        dense_idxs, dense_scores = self.retriever.retrieve(query, top_k=top_k_dense)
+        dense_idxs, _ = self.retriever.retrieve(query, top_k=top_k_dense)
         dense_idxs = np.atleast_1d(dense_idxs).flatten().tolist()
 
         if keyword_filter:
             dense_idxs = [i for i in dense_idxs
-                          if all(kw.lower() in self.retriever.get_chunk_texts()[i].lower()
+                          if all(kw.lower() in self.chunk_texts[i].lower()
                                  for kw in keyword_filter)]
 
-        q_vec = self.vectorizer.transform([query])
-        sparse_scores = (self.tfidf_matrix @ q_vec.T).toarray().ravel()
+        if self.use_sparse:
+            q_vec = self.vectorizer.transform([query])
+            sparse_scores = (self.tfidf_matrix @ q_vec.T).toarray().ravel()
+        else:
+            sparse_scores = np.zeros(self.n_chunks)
         sparse_idxs = np.argsort(-sparse_scores)[:top_k_dense].tolist()
 
         combined = []
@@ -47,8 +56,8 @@ class HybridReranker:
             if len(combined) >= top_k_dense:
                 break
 
-        candidate_texts = [self.retriever.get_chunk_texts()[i] for i in combined]
-        pairs = [(query, chunk.split("Resposta:")[0].strip()) for chunk in candidate_texts]
+        candidate_texts = [self.chunk_texts[i] for i in combined]
+        pairs = [(query, c.split("Resposta:")[0].strip()) for c in candidate_texts]
         rerank_scores = self.reranker.predict(pairs)
         order = np.argsort(rerank_scores)[::-1]
 

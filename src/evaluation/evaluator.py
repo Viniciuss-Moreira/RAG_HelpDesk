@@ -1,27 +1,25 @@
 import json
-from pathlib import Path
 import numpy as np
 from src.retrieval.retriever import Retriever
+from src.retrieval.reranker import HybridReranker
+from src.evaluation.metrics import (
+    precision_at_k as retrieval_precision_at_k,
+    recall_at_k,
+    mean_reciprocal_rank,
+    bleu_score
+)
 from src.ingestion.document_loader import load_documents_from_dir
 from src.ingestion.preprocessor import preprocess_documents
 from src.ingestion.text_splitter import split_text
 
 
-def precision_at_k(expected_keywords, retrieved_texts, k=3):
-    hits = 0
-    top_texts = retrieved_texts[:k]
-    joined = " ".join(top_texts).lower()
-    for kw in expected_keywords:
-        if kw.lower() in joined:
-            hits += 1
-    return hits / len(expected_keywords) if expected_keywords else 0
-
-
 def run_evaluation(
     benchmark_path: str = "tests/benchmark.json",
-    k: int = 3
+    k: int = 3,
+    top_k_dense: int = 10,
+    top_k_final: int = 3,
+    sparse_alpha: float = 0.5
 ):
-    # 1. Carrega benchmarks
     with open(benchmark_path, encoding="utf-8") as f:
         benchmarks = json.load(f)
 
@@ -31,27 +29,42 @@ def run_evaluation(
     texts = [chunk['content'] for chunk in chunks]
 
     retriever = Retriever("data/embeddings/batch_000.npy")
+    reranker = HybridReranker(
+        retriever=retriever,
+        chunk_texts=texts,
+        reranker_model="cross-encoder/ms-marco-MiniLM-L-12-v2",
+        sparse_alpha=sparse_alpha
+    )
 
-    precisions = []
+    all_retrieved = []
+    all_relevant = []
 
-    print(f"starting assessments with Precision@{k}\n")
+    print(f"starting assessment reranker: Precision@{k}, Recall@{k}, MRR")
+    print(f"dense top_k: {top_k_dense}, final top_k: {top_k_final}, sparse_alpha: {sparse_alpha}\n")
+
     for i, entry in enumerate(benchmarks, 1):
         query = entry['query']
-        expected = entry['expected_keywords']
-        idxs, _ = retriever.retrieve(query, top_k=k)
-        idxs = np.atleast_1d(idxs).flatten()
+        relevant_idxs = entry.get('relevant_idxs', [])
 
-        retrieved_texts = []
-        for j in idxs:
-            j_int = int(j)
-            if 0 <= j_int < len(texts):
-                retrieved_texts.append(texts[j_int])
-            else:
-                print(f"[evaluator] warning: index {j_int} is out of range and will be ignored.")
+        idxs, scores = reranker.retrieve_and_rerank(
+            query,
+            top_k_dense=top_k_dense,
+            top_k_final=top_k_final
+        )
 
-        score = precision_at_k(expected, retrieved_texts, k)
-        precisions.append(score)
-        print(f"{i}. Query: {query}\n   Precision@{k}: {score:.2f}\n")
+        p = retrieval_precision_at_k(retrieved_idxs=idxs, relevant_idxs=relevant_idxs, k=k)
+        r = recall_at_k(retrieved_idxs=idxs, relevant_idxs=relevant_idxs, k=k)
 
-    avg = sum(precisions) / len(precisions) if precisions else 0
-    print(f"media Precision@{k}: {avg:.2f}")
+        all_retrieved.append(idxs)
+        all_relevant.append(relevant_idxs)
+
+        print(f"{i}. Query: {query}")
+        print(f"   Precision@{k}: {p:.2f}, Recall@{k}: {r:.2f}")
+        print(f"   Retrieved idxs: {idxs}")
+        print(f"   Rerank scores: {[f'{s:.4f}' for s in scores]}\n")
+
+    mrr = mean_reciprocal_rank(retrieved_lists=all_retrieved, relevant_idxs_list=all_relevant)
+    print(f"mean reciprocal rank (MRR): {mrr:.2f}\n")
+
+if __name__ == "__main__":
+    run_evaluation()
