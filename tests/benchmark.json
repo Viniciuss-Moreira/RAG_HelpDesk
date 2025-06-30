@@ -1,22 +1,32 @@
 [
   {
-    "query": "Como liberar espaço em disco? E se não resolver?",
-    "expected_keywords": ["disco", "espaço", "liberar", "limpeza", "arquivos"]
+    "query": "Como liberar espaço em disco?",
+    "relevant_idxs": [
+      24178
+    ]
   },
   {
     "query": "O que é firewall e como ativar?",
-    "expected_keywords": ["firewall", "segurança", "ativar", "proteção", "windows"]
+    "relevant_idxs": [
+      3404
+    ]
   },
   {
     "query": "Como formatar meu notebook com Windows 10?",
-    "expected_keywords": ["formatar", "windows", "notebook", "redefinir", "reinstalar"]
+    "relevant_idxs": [
+      35790
+    ]
   },
   {
     "query": "Como conectar impressora à rede Wi-Fi?",
-    "expected_keywords": ["impressora", "wifi", "rede", "conectar", "wireless"]
+    "relevant_idxs": [
+      28669
+    ]
   },
   {
     "query": "Por que o Wi-Fi desconecta sozinho?",
-    "expected_keywords": ["wifi", "desconecta", "driver", "rede", "conexão"]
+    "relevant_idxs": [
+      15196
+    ]
   }
 ]
