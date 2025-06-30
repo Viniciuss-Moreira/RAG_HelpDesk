@@ -38,9 +38,10 @@ class HybridReranker:
         dense_idxs = np.atleast_1d(dense_idxs).flatten().tolist()
 
         if keyword_filter:
-            dense_idxs = [i for i in dense_idxs
-                          if all(kw.lower() in self.chunk_texts[i].lower()
-                                 for kw in keyword_filter)]
+            dense_idxs = [
+                i for i in dense_idxs
+                if all(kw.lower() in self.chunk_texts[i].lower() for kw in keyword_filter)
+            ]
 
         if self.use_sparse:
             q_vec = self.vectorizer.transform([query])
@@ -51,7 +52,7 @@ class HybridReranker:
 
         combined = []
         for idx in dense_idxs + sparse_idxs:
-            if idx not in combined:
+            if idx not in combined and idx < self.n_chunks:  # Proteção contra índice inválido
                 combined.append(idx)
             if len(combined) >= top_k_dense:
                 break
