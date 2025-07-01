@@ -18,10 +18,10 @@ class HybridReranker:
         self.chunk_texts = [doc.page_content for doc in docs_in_order]
         self.chunk_metadata = [doc.metadata for doc in docs_in_order]
         
-        print(f"Modelo de Re-ranking '{reranker_model}' carregado. Construindo matriz TF-IDF...")
+        print(f"rerank model '{reranker_model}' loading. building matriz tf-idf")
         self.vectorizer = TfidfVectorizer()
         self.tfidf_matrix = self.vectorizer.fit_transform(self.chunk_texts)
-        print("HybridReranker pronto.")
+        print("reranker ready")
 
     def retrieve_and_rerank(
         self,
