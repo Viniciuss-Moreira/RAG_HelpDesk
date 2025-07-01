@@ -16,25 +16,20 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 VECTOR_STORE_PATH = str(PROJECT_ROOT / "data" / "vector_store_faiss")
 EMBEDDING_MODEL_NAME = "BAAI/bge-m3"
 LLM_REPO_ID = os.getenv("HUGGINGFACE_MODEL", "mistralai/Mixtral-8x7B-Instruct-v0.1")
+
 HF_TOKEN = os.getenv("HUGGINGFACE_API_TOKEN")
+
+if not HF_TOKEN:
+    raise ValueError("HUGGINGFACE_API_TOKEN not found")
 
 client = InferenceClient(model=LLM_REPO_ID, token=HF_TOKEN)
 
 prompt_template = PromptTemplate.from_template("""
 <|system|>
-Você é um assistente de helpdesk de TI especialista. Sua tarefa é responder à pergunta do usuário usando APENAS o contexto fornecido.
-Responda em Português.
-Se a resposta não estiver no contexto, responda EXATAMENTE: 'Não encontrei informações sobre isso na minha base de dados.'
-Não adicione nenhuma informação que não esteja no texto de contexto.
-</s>
-<|user|>
-Contexto:
-{context}
-
-Pergunta:
-{query}
-</s>
-<|assistant|>
+Você é um assistente de helpdesk de TI especialista... (seu prompt aqui)
+</s><|user|>
+Contexto: {context}\n\nPergunta: {query}
+</s><|assistant|>
 Resposta em Português:
 """)
 
