@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sentence_transformers import CrossEncoder
@@ -14,14 +14,14 @@ class HybridReranker:
         self.vector_store = vector_store
         self.reranker = CrossEncoder(reranker_model)
         
-        self.chunk_texts = [
-            doc.page_content for doc in self.vector_store.docstore._dict.values()
-        ]
+        docs_in_order = list(self.vector_store.docstore._dict.values())
+        self.chunk_texts = [doc.page_content for doc in docs_in_order]
+        self.chunk_metadata = [doc.metadata for doc in docs_in_order]
         
-        print(f"rerank model '{reranker_model}' loading. building matriz with tf-idf")
+        print(f"Modelo de Re-ranking '{reranker_model}' carregado. Construindo matriz TF-IDF...")
         self.vectorizer = TfidfVectorizer()
         self.tfidf_matrix = self.vectorizer.fit_transform(self.chunk_texts)
-        print("rerank ready")
+        print("HybridReranker pronto.")
 
     def retrieve_and_rerank(
         self,
@@ -34,8 +34,10 @@ class HybridReranker:
         q_vec = self.vectorizer.transform([query])
         sparse_scores = (self.tfidf_matrix @ q_vec.T).toarray().ravel()
         sparse_indices = np.argsort(-sparse_scores)[:top_k_dense]
+        
         sparse_docs = [
-            Document(page_content=self.chunk_texts[i]) for i in sparse_indices
+            Document(page_content=self.chunk_texts[i], metadata=self.chunk_metadata[i]) 
+            for i in sparse_indices
         ]
 
         combined_docs = []
@@ -50,7 +52,6 @@ class HybridReranker:
         
         doc_scores = list(zip(combined_docs, rerank_scores))
         sorted_doc_scores = sorted(doc_scores, key=lambda x: x[1], reverse=True)
-        
         final_docs = [doc for doc, score in sorted_doc_scores[:top_k_final]]
         
         return final_docs

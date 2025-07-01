@@ -42,10 +42,15 @@ def format_docs(docs: List[Dict]) -> str:
     return "\n\n".join(doc.page_content for doc in docs)
 
 def generate_answer_from_context(input_dict: Dict) -> str:
+
     context_docs = input_dict["context"]
     query_text = input_dict["query"]
     formatted_context = format_docs(context_docs)
-    prompt_value = prompt_template.invoke({"context": formatted_context, "query": query_text})
+    
+    prompt_value = prompt_template.invoke({
+        "context": formatted_context,
+        "query": query_text
+    })
     final_prompt_text = str(prompt_value)
     
     try:
@@ -55,10 +60,25 @@ def generate_answer_from_context(input_dict: Dict) -> str:
             temperature=0.1
         )
         raw_answer = response.choices[0].message.content
-        return raw_answer.strip()
+        
+        clean_answer = raw_answer.strip()
+        
+        if clean_answer.startswith('text="'):
+            clean_answer = clean_answer[6:]
+        elif clean_answer.startswith("text='"):
+            clean_answer = clean_answer[6:]
+            
+        if clean_answer.endswith('"') or clean_answer.endswith("'"):
+            clean_answer = clean_answer[:-1]
+
+        if clean_answer.startswith("Resposta:"):
+            clean_answer = clean_answer.split("Resposta:", 1)[1]
+        
+        return clean_answer.strip()
+
     except Exception as e:
-        print(f"error in huggingface API: {e}")
-        return f"error in contact llm: {e}"
+        print(f"error for call API huggingface: {e}")
+        return f"error for contact llm: {e}"
 
 def get_rag_chain():
     print("loading pipeline")
