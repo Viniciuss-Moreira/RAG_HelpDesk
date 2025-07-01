@@ -1,64 +1,70 @@
 import os
+import shutil
 from langchain_community.document_loaders import DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceBgeEmbeddings
+# Importação moderna para os embeddings, evitando avisos
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
-from dotenv import load_dotenv
-
-# Carrega o .env que está na raiz do projeto (acima de src/)
-dotenv_path = os.path.join(os.path.dirname(__file__), "..", ".env")
-load_dotenv()
-print("Procurando .env em:", dotenv_path)
-
 
 # --- Configuração ---
+# Caminhos relativos a partir da raiz do projeto
 RAW_DATA_DIR = "data/raw"
 VECTOR_STORE_PATH = "data/vector_store_faiss"
-MODEL_NAME = "BAAI/bge-small-en-v1.5"
+
+# Modelo de embedding correto e multilíngue (1024 dimensões)
+EMBEDDING_MODEL_NAME = "BAAI/bge-m3"
 
 def run_ingestion():
     """
-    Executa o pipeline de ingestão de dados usando LangChain.
-    1. Carrega documentos de um diretório.
-    2. Divide os documentos em chunks.
-    3. Gera embeddings para os chunks.
-    4. Cria e salva um Vector Store FAISS localmente.
+    Executa o pipeline de ingestão de dados usando os componentes mais
+    recentes do LangChain para criar um Vector Store FAISS.
     """
-    print("Iniciando ingestão com LangChain...")
+    print(f"Iniciando ingestão com o modelo de embedding: {EMBEDDING_MODEL_NAME}")
 
-    # Carrega os documentos do diretório especificado
-    loader = DirectoryLoader(RAW_DATA_DIR, glob="**/*.txt", show_progress=True)
+    # 1. Carregar documentos
+    print(f"Carregando documentos de '{RAW_DATA_DIR}'...")
+    loader = DirectoryLoader(RAW_DATA_DIR, glob="**/*.txt", show_progress=True, use_multithreading=True)
     docs = loader.load()
+    
+    if not docs:
+        print(f"AVISO: Nenhum documento encontrado em '{RAW_DATA_DIR}'. A ingestão será interrompida.")
+        return
     print(f"Carregados {len(docs)} documentos.")
 
-    # Divide os documentos em pedaços menores (chunks)
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+    # 2. Dividir documentos em chunks
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1000, 
+        chunk_overlap=100
+    )
     chunks = text_splitter.split_documents(docs)
     print(f"Documentos divididos em {len(chunks)} chunks.")
 
-    # Configura o modelo de embedding que transformará texto em vetores
-    model_kwargs = {'device': 'cpu'}  # Use 'cuda' se tiver GPU
-    encode_kwargs = {'normalize_embeddings': True}
-    embeddings_model = HuggingFaceBgeEmbeddings(
-        model_name=MODEL_NAME,
-        model_kwargs=model_kwargs,
-        encode_kwargs=encode_kwargs
+    # 3. Configurar o modelo de embedding
+    print("Carregando o modelo de embedding (isso pode levar um tempo na primeira vez)...")
+    embeddings_model = HuggingFaceEmbeddings(
+        model_name=EMBEDDING_MODEL_NAME,
+        model_kwargs={'device': 'cpu'}, # Mude para 'cuda' se tiver GPU
+        encode_kwargs={'normalize_embeddings': True}
     )
+    print("Modelo de embedding carregado.")
 
-    # Cria o Vector Store usando os chunks e o modelo de embedding
-    print("Criando o vector store com FAISS...")
+    # 4. Criar e salvar o Vector Store
+    print("Criando o banco de dados vetorial FAISS...")
+    
+    # Apaga o diretório antigo para garantir que não haja conflito de dimensões
+    if os.path.exists(VECTOR_STORE_PATH):
+        print(f"Removendo o Vector Store antigo em '{VECTOR_STORE_PATH}'...")
+        shutil.rmtree(VECTOR_STORE_PATH)
+        print("Vector Store antigo removido.")
+
     vector_store = FAISS.from_documents(chunks, embeddings_model)
-
-    # Salva o Vector Store no disco para ser usado pela API
     vector_store.save_local(VECTOR_STORE_PATH)
 
     print("-" * 50)
-    print(f"Ingestão concluída! Vector Store salvo em '{VECTOR_STORE_PATH}'")
+    print("Pipeline de ingestão concluído com sucesso!")
+    print(f"Vector Store salvo em: '{VECTOR_STORE_PATH}'")
     print("-" * 50)
 
 
 if __name__ == "__main__":
-    # Verifica se o token da Hugging Face está configurado
-    if not os.getenv("HUGGINGFACE_API_TOKEN"):
-        raise ValueError("A variável de ambiente HUGGINGFACE_API_TOKEN não está configurada.")
     run_ingestion()
