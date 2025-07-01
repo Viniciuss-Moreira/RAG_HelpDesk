@@ -9,7 +9,7 @@ class HybridReranker:
         self,
         retriever: Retriever,
         chunk_texts: List[str],
-        reranker_model: str = "cross-encoder/ms-marco-MiniLM-L-12-v2",
+        reranker_model: str = "cross-encoder/mmarco-mMiniLMv2-L12-H384",
         sparse_alpha: float = 0.5
     ):
         self.retriever = retriever
