@@ -1,3 +1,6 @@
+[🇧🇷 Ver em Português](./README.pt-br.md)
+---
+
 # 🤖 Synapse Desk
 
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
@@ -8,6 +11,7 @@
 
 **Live Application Link:** [Access the Helpdesk assistent Here](https://vinimoreira-rag-frontend.hf.space)
 ---
+
 ![GIF of the Application](./img/demo.gif)
 
 ---
