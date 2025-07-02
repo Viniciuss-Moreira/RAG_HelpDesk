@@ -7,7 +7,7 @@
 [![Docker](https://img.shields.io/badge/Docker-20.10-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
 **Live Application Link:** [Access the Helpdesk assistent Here](https://vinimoreira-rag-frontend.hf.space)
-![GIF of the Application](https://docs.streamlit.io/_images/st.chat_input_demo.gif)
+![GIF of the Application](./img/demo.gif)
 
 ---
 
