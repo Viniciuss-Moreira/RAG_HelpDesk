@@ -1,4 +1,4 @@
-[🇧🇷 Ver em Português](./README.pt-br.md)
+[🇺🇸 View in English](./README.md)
 ---
 # 🤖 Synapse Desk
 
