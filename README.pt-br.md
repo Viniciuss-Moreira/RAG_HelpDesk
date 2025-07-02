@@ -111,6 +111,5 @@ O fluxo de dados e processamento segue a arquitetura RAG moderna:
 
 ## 🔮 Possíveis Melhorias Futuras
 
-* Implementação de um sistema de avaliação (evaluator) para medir a qualidade das respostas.
 * Testes com diferentes LLMs (GPT-4, Llama 3).
 * Adição de um banco de dados para salvar o histórico de conversas e o feedback dos usuários.
