@@ -9,7 +9,6 @@
 [![Docker](https://img.shields.io/badge/Docker-20.10-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
 **Link para a Aplicação:** [Acesse o assistente de Helpdesk Aqui](https://vinimoreira-rag-frontend.hf.space)
-
 ---
 
 ![GIF da Aplicação](./img/demo.gif)
