@@ -62,7 +62,7 @@ The data and processing flow follows a modern RAG architecture:
 
 2.  **Clone the Repository:**
     ```bash
-    git clone [https://github.com/Viniciuss-Moreira/Synapse_Desk.git](https://github.com/Viniciuss-Moreira/Synapse_Desk.git)
+    git clone https://github.com/Viniciuss-Moreira/Synapse_Desk.git
     cd Synapse_Desk
     ```
 
