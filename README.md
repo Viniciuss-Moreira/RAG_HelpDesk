@@ -13,7 +13,7 @@
 
 ## 📖 Project Description
 
-This project implements a complete, end-to-end **Retrieval-Augmented Generation (RAG)** system designed to act as an expert IT helpdesk assistant. The application is capable of answering questions in Portuguese based on a custom knowledge base, utilizing advanced techniques to ensure the accuracy and relevance of its responses.
+This project implements a complete, end-to-end Retrieval-Augmented Generation (RAG) system designed to act as an expert IT helpdesk assistant. The application is capable of answering questions in Portuguese based on a custom knowledge base, utilizing advanced techniques to ensure the accuracy and relevance of its responses.
 
 The entire system is deployed as a microservices architecture in the cloud, featuring a robust API backend and an interactive user interface.
 
@@ -23,14 +23,14 @@ The entire system is deployed as a microservices architecture in the cloud, feat
 
 The data and processing flow follows a modern RAG architecture:
 
-1.  **Data Ingestion:** Source documents (`.txt`, `.pdf`, etc.) are loaded and processed in an offline pipeline. They are split into chunks and vectorized using the `BAAI/bge-m3` embedding model.
-2.  **Vector Storage:** The resulting vectors and metadata are stored in a **FAISS** index, optimized for high-speed similarity searches.
-3.  **API Backend:** A **FastAPI** API, containerized with **Docker**, receives user queries.
+1.  **Data Ingestion:** Source documents (`.txt`) are loaded and processed in an offline pipeline. They are split into chunks and vectorized using the `BAAI/bge-m3` embedding model.
+2.  **Vector Storage:** The resulting vectors and metadata are stored in a FAISS index, optimized for high-speed similarity searches.
+3.  **API Backend:** A FastAPI API, containerized with Docker, receives user queries.
 4.  **RAG Inference Pipeline:**
     * **Hybrid Search:** The query is used to perform both a dense vector search and a sparse keyword search (TF-IDF).
-    * **Re-ranking:** The results from the search stage are combined and re-ordered by a **Cross-Encoder** model (`cross-encoder/ms-marco-MiniLM-L-6-v2`) to select the most relevant context snippets.
+    * **Re-ranking:** The results from the search stage are combined and re-ordered by a Cross-Encoder model (`cross-encoder/ms-marco-MiniLM-L-6-v2`) to select the most relevant context snippets.
     * **Generation:** The refined context and the original query are fed into a state-of-the-art LLM (`Mixtral-8x7B-Instruct`) through an optimized prompt to generate the final answer.
-5.  **UI Frontend:** A **Streamlit** application provides an interactive chat interface, which consumes the backend API and displays the responses and their sources.
+5.  **UI Frontend:** A Streamlit application provides an interactive chat interface, which consumes the backend API and displays the responses and their sources.
 
 ---
 
@@ -49,7 +49,7 @@ The data and processing flow follows a modern RAG architecture:
 
 * **Backend:** Python, FastAPI, Uvicorn
 * **Frontend:** Streamlit
-* **AI & Machine Learning:** LangChain, PyTorch, Sentence Transformers, FAISS, Scikit-learn, Hugging Face (Hub, InferenceClient)
+* **AI & Machine Learning:** LangChain, PyTorch, Sentence Transformers, FAISS, Hugging Face (Hub, InferenceClient)
 * **Deployment & Infrastructure:** Docker, Hugging Face Spaces, Git
 
 ---
@@ -62,8 +62,8 @@ The data and processing flow follows a modern RAG architecture:
 
 2.  **Clone the Repository:**
     ```bash
-    git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
-    cd your-repo-name
+    git clone [https://github.com/Viniciuss-Moreira/Synapse_Desk.git](https://github.com/Viniciuss-Moreira/Synapse_Desk.git)
+    cd Synapse_Desk
     ```
 
 3.  **Set Up the Virtual Environment:**
@@ -90,7 +90,7 @@ The data and processing flow follows a modern RAG architecture:
     * Add your knowledge base files to the `data/raw` folder.
     * Run the ingestion script:
     ```bash
-    python src/ingest_langchain.py
+    python -m src.ingestion.embedder
     ```
 
 7.  **Start the Servers (in two separate terminals):**
@@ -107,6 +107,5 @@ The data and processing flow follows a modern RAG architecture:
 
 ## 🔮 Future Improvements
 
-* Implementation of a formal evaluation system (evaluator) to benchmark response quality.
-* Experimentation with other state-of-the-art LLMs (like GPT-4o or Llama 3).
+* Experimentation with other LLMs (like GPT-4o or Llama 3).
 * Addition of a database to store chat history and user feedback.
